@@ -64,12 +64,9 @@ function calculateTimes() {
 
 
 database.ref().on("child_added", function (snapshot) {
-    console.log(snapshot.val().trainName);
-    console.log(snapshot.val().destination);
-    console.log(snapshot.val().firstTime);
-    console.log(snapshot.val().arrival);
-    console.log(snapshot.val().frequency);
-    console.log(snapshot.val().minsAway);
+    var childOrigTime = snapshot.val().firstTime;
+    var childFreq = snapshot.val().frequency;
+    updateTimes(childOrigTime, childFreq);
 
     $("#current-train").append("<tbody>");
     $("#current-train").append("<tr>");
@@ -77,10 +74,28 @@ database.ref().on("child_added", function (snapshot) {
     $("#current-train").append("<td>" + snapshot.val().trainName + "</td>");
     $("#current-train").append("<td>" + snapshot.val().destination + "</td>");
     $("#current-train").append("<td>" + snapshot.val().frequency + "</td>");
-    $("#current-train").append("<td>" + snapshot.val().arrival + "</td>");
-    $("#current-train").append("<td>" + snapshot.val().minsAway + "</td>");
+    $("#current-train").append("<td>" + arrival + "</td>");
+    $("#current-train").append("<td>" + minsAway + "</td>");
 
     $("#current-train").append("</tbody>");
     $("#current-train").append("</tr>");
 });
 
+function updateTimes(origTime, freq) {
+    var firstTimeConverted = moment(origTime, "HH:mm").subtract(1, "years");
+    var time = moment();
+    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+
+    // Time apart (remainder)
+    var tRemainder = diffTime % freq;
+
+    // Minute Until Train
+    minsAway = freq - tRemainder;
+    console.log("UPDATED MINUTES TILL TRAIN: " + minsAway);
+
+    // Next Train
+    arrival = moment().add(minsAway, "minutes");
+    console.log("UPDATED ARRIVAL TIME: " + moment(arrival).format("hh:mm"));
+    arrival = moment(arrival).format("hh:mm");
+
+}
